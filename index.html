@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darío Caño Molina | Desarrollador Web</title>
+    <!-- GSAP & ScrollTrigger (Cargados desde CDN oficial) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <style>
+        /* Variables Globales */
+        :root {
+            --bg-dark: #050505;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --overlay-color: rgba(3, 3, 5, 0.75);
+            --font-sans: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Reset Básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* =========================================
+           CANVAS & OVERLAY FIXED (Fondo de Secuencia)
+           ========================================= */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #hero-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--overlay-color);
+            z-index: 1;
+        }
+
+        /* =========================================
+           ESTRUCTURA PRINCIPAL
+           ========================================= */
+        .content {
+            position: relative;
+            z-index: 10; /* Por encima del canvas */
+        }
+
+        .section {
+            min-height: 100vh;
+            padding: 80px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* =========================================
+           HERO SECTION
+           ========================================= */
+        #hero {
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .hero-content h2 {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 40px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Botones Tecnológicos */
+        .btn-tech, .btn-outline {
+            display: inline-block;
+            padding: 15px 35px;
+            font-size: 1rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-tech {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 15px transparent;
+        }
+
+        .btn-tech:hover {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--text-muted);
+            margin: 10px;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-main);
+        }
+
+        /* =========================================
+           TIMELINE 3D (Sobre Mí)
+           ========================================= */
+        .timeline {
+            position: relative;
+            border-left: 2px solid var(--accent-color);
+            padding-left: 30px;
+            margin-left: 20px;
+            perspective: 1000px; /* Contenedor con perspectiva 3D */
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -37px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        /* Tarjeta con Estética 3D y Efecto Vidrio (Glassmorphism) */
+        .timeline-content {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 25px;
+            border-radius: 8px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 15px 35px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .timeline-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .timeline-content .date {
+            display: block;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .timeline-content p {
+            color: var(--text-muted);
+        }
+
+        /* =========================================
+           SERVICIOS
+           ========================================= */
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .service-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+        }
+
+        /* =========================================
+           CONTACTO
+           ========================================= */
+        #contacto {
+            text-align: center;
+        }
+
+        .contact-container p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: var(--text-muted);
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* =========================================
+           MEDIA QUERIES (Desktop)
+           ========================================= */
+        @media (min-width: 768px) {
+            .services-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .timeline {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenedor del Fondo Animado -->
+    <div id="canvas-container">
+        <canvas id="hero-canvas"></canvas>
+        <div class="overlay"></div>
+    </div>
+
+    <!-- Contenido Principal Superpuesto -->
+    <main class="content">
+        
+        <!-- Hero Section -->
+        <section id="hero" class="section">
+            <div class="hero-content fade-el">
+                <h1>Darío Caño Molina</h1>
+                <h2>Desarrollador Web</h2>
+                <a href="#contacto" class="btn-tech">Trabajemos Juntos</a>
+            </div>
+        </section>
+
+        <!-- Sobre Mí & Timeline con Animación 3D -->
+        <section id="sobre-mi" class="section">
+            <h2 class="section-title fade-el">Sobre Mí & Trayectoria</h2>
+            <div class="timeline">
+                
+                <!-- Viñeta 1 -->
+                <div class="timeline-item timeline-3d-el">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>Infancia: Pasión por los Ordenadores y el Diseño</h3>
+                        <span class="date">Inicios</span>
+                        <p>Desde muy pequeño fascinado por el funcionamiento de la tecnología, la informática y el diseño visual, sentando las bases de mi vocación tecnológica.</p>
+                    </div>
+                </div>
+
+                <!-- Viñeta 2 -->
+                <div class="timeline-item timeline-3d-el">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>Grado Medio en Sistemas Microinformáticos y Redes (SMR)</h3>
+                        <span class="date">2022 - 2024</span>
+                        <p>Consolidación de bases técnicas profundas sobre hardware, sistemas operativos, redes locales y soporte avanzado.</p>
+                    </div>
+                </div>
+
+                <!-- Viñeta 3 -->
+                <div class="timeline-item timeline-3d-el">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>Grado Superior en Desarrollo de Aplicaciones Web (DAW)</h3>
+                        <span class="date">Actualidad</span>
+                        <p>Especialización completa en programación frontend y backend, bases de datos y creación de experiencias web interactivas de vanguardia.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Servicios -->
+        <section id="servicios" class="section">
+            <h2 class="section-title fade-el">Servicios</h2>
+            <div class="services-grid">
+                <div class="service-card fade-el">
+                    <h3>Desarrollo Web a Medida</h3>
+                    <p>Páginas web rápidas, seguras y optimizadas para SEO, construidas desde cero según las necesidades de tu negocio.</p>
+                </div>
+                <div class="service-card fade-el">
+                    <h3>Diseño UI/UX Interactivo</h3>
+                    <p>Interfaces modernas con animaciones de alto impacto que retienen la atención absoluta del usuario.</p>
+                </div>
+                <div class="service-card fade-el">
+                    <h3>Soluciones E-commerce</h3>
+                    <p>Plataformas de venta online escalables, con pasarelas de pago seguras y gestión de inventario eficiente.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contacto -->
+        <section id="contacto" class="section">
+            <h2 class="section-title fade-el">Contacto</h2>
+            <div class="contact-container fade-el">
+                <p>¿Tienes un proyecto en mente? Hablemos y hagámoslo realidad.</p>
+                <div class="social-links">
+                    <a href="mailto:tu-email@correo.com" class="btn-tech">Enviar Email</a>
+                    <a href="https://linkedin.com/in/tu-perfil" target="_blank" class="btn-outline">LinkedIn</a>
+                    <a href="https://github.com/dariocano020" target="_blank" class="btn-outline">GitHub</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Integrado y Robusto -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const canvas = document.getElementById("hero-canvas");
+            const ctx = canvas.getContext("2d");
+
+            const frameCount = 300;
+            const images = [];
+            let imagesLoaded = 0;
+
+            // Ruta directa apuntando a la carpeta "frames" en el mismo directorio
+            const currentFrame = index => (
+                `frames/ezgif-frame-${(index + 1).toString().padStart(3, '0')}.jpg`
+            );
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                if (images[Math.round(canvasObj.frame)]) {
+                    renderImage(images[Math.round(canvasObj.frame)]);
+                }
+            }
+
+            function renderImage(img) {
+                if (!img || !img.complete) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const hRatio = canvas.width / img.width;
+                const vRatio = canvas.height / img.height;
+                const ratio = Math.max(hRatio, vRatio);
+                
+                const centerShiftX = (canvas.width - img.width * ratio) / 2;
+                const centerShiftY = (canvas.height - img.height * ratio) / 2;
+                
+                ctx.drawImage(
+                    img, 
+                    0, 0, img.width, img.height,
+                    centerShiftX, centerShiftY, img.width * ratio, img.height * ratio
+                );
+            }
+
+            // Precarga de frames con control de errores
+            for (let i = 0; i < frameCount; i++) {
+                const img = new Image();
+                img.src = currentFrame(i);
+                img.onload = () => {
+                    imagesLoaded++;
+                    if (imagesLoaded === 1) {
+                        resizeCanvas();
+                    }
+                };
+                images.push(img);
+            }
+
+            window.addEventListener("resize", resizeCanvas);
+
+            const canvasObj = { frame: 0 };
+
+            // Animación del Canvas vinculada al scroll de toda la página
+            gsap.to(canvasObj, {
+                frame: frameCount - 1,
+                snap: "frame",
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 0.5
+                },
+                onUpdate: () => {
+                    renderImage(images[Math.round(canvasObj.frame)]);
+                }
+            });
+
+            // Animaciones de entrada genéricas (fade-el)
+            document.querySelectorAll(".fade-el").forEach((el) => {
+                gsap.fromTo(el, 
+                    { opacity: 0, y: 40 }, 
+                    {
+                        opacity: 1, 
+                        y: 0,
+                        duration: 1,
+                        ease: "power3.out",
+                        scrollTrigger: {
+                            trigger: el,
+                            start: "top 85%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            });
+
+            // Animaciones 3D avanzadas para la Línea de Tiempo (Efecto profundidad y rotación 3D)
+            document.querySelectorAll(".timeline-3d-el").forEach((el) => {
+                gsap.fromTo(el, 
+                    { 
+                        opacity: 0, 
+                        rotationX: 25,    /* Inclinación 3D en el eje X */
+                        rotationY: -15,   /* Inclinación 3D en el eje Y */
+                        z: -200,          /* Profundidad alejada en el eje Z */
+                        y: 80 
+                    }, 
+                    {
+                        opacity: 1, 
+                        rotationX: 0,
+                        rotationY: 0,
+                        z: 0,
+                        y: 0,
+                        duration: 1.2,
+                        ease: "power4.out",
+                        scrollTrigger: {
+                            trigger: el,
+                            start: "top 85%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            });
+        });
+    </script>
+</body>
+</html>
